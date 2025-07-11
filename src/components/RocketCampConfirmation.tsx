@@ -465,131 +465,131 @@ export default function RocketCampConfirmation() {
                   </CardContent>
                 </Card>
 
-                {/* Participants Table */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <Card className={`shadow-xl border-0 ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Lista de Participantes
-                        <Badge variant="secondary" className="ml-2">
-                          {sortedParticipants.length} de {totalCount}
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto -mx-2 sm:mx-0">
-                        <Table className="min-w-[600px] sm:min-w-0 w-full text-xs sm:text-sm">
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-12">
-                                <Checkbox
-                                  checked={selectedParticipants.length === sortedParticipants.length && sortedParticipants.length > 0}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setSelectedParticipants(sortedParticipants.map((p) => p.id))
-                                    } else {
-                                      setSelectedParticipants([])
-                                    }
-                                  }}
-                                />
-                              </TableHead>
-                              <TableHead>
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => handleSort("name")}
-                                  className="h-auto p-0 font-semibold hover:bg-transparent"
-                                >
-                                  Nome
-                                  <ArrowUpDown className="ml-1 h-4 w-4" />
-                                </Button>
-                              </TableHead>
-                              <TableHead>
-                                <Button
-                                  variant="ghost"
-                                  onClick={() => handleSort("confirmed")}
-                                  className="h-auto p-0 font-semibold hover:bg-transparent"
-                                >
-                                  Status
-                                  <ArrowUpDown className="ml-1 h-4 w-4" />
-                                </Button>
-                              </TableHead>
-                              <TableHead>Motivo</TableHead>
-                              <TableHead className="text-center">Ações</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            <AnimatePresence>
-                              {sortedParticipants.map((participant) => (
-                                <motion.tr
-                                  key={participant.id}
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: 20 }}
-                                  transition={{ duration: 0.2 }}
-                                  className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
-                                    selectedParticipants.includes(participant.id)
-                                      ? "bg-blue-50 dark:bg-blue-900/20"
-                                      : ""
-                                  }`}
-                                >
-                                  <TableCell>
-                                    <Checkbox
-                                      checked={selectedParticipants.includes(participant.id)}
-                                      onCheckedChange={(checked) => {
-                                        if (checked) {
-                                          setSelectedParticipants((prev) => [...prev, participant.id])
-                                        } else {
-                                          setSelectedParticipants((prev) =>
-                                            prev.filter((id) => id !== participant.id)
-                                          )
-                                        }
-                                      }}
-                                    />
-                                  </TableCell>
-                                  <TableCell className="font-medium">{participant.name}</TableCell>
-                                  <TableCell>
-                                    <Badge
-                                      variant={participant.confirmed ? "default" : "secondary"}
-                                      className={`gap-1 cursor-pointer hover:opacity-80 ${
-                                        participant.confirmed
-                                          ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                                          : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
-                                      }`}
-                                      onClick={() => toggleConfirmation(participant.id)}
-                                    >
-                                      {participant.confirmed ? (
-                                        <CheckCircle className="h-3 w-3" />
-                                      ) : (
-                                        <XCircle className="h-3 w-3" />
-                                      )}
-                                      {participant.confirmed ? "Confirmado" : "Pendente"}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell className="max-w-xs truncate">{participant.reason}</TableCell>
-                                  <TableCell className="text-center">
-                                    <div className="flex items-center justify-center gap-1">
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            className="h-8 w-8 p-0"
-                                            onClick={() => openDetailsDialog(participant)}
-                                          >
-                                            <Eye className="h-4 w-4" />
-                                          </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Ver detalhes</TooltipContent>
-                                      </Tooltip>
-
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                                                                      <Button 
+                {/* Participants Table - Desktop */}
+                <div className="hidden sm:block">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Users className="h-5 w-5" />
+                          Lista de Participantes
+                          <Badge variant="secondary" className="ml-2">
+                            {sortedParticipants.length} de {totalCount}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto -mx-2 sm:mx-0">
+                          <Table className="min-w-[600px] sm:min-w-0 w-full text-xs sm:text-sm">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-12">
+                                  <Checkbox
+                                    checked={selectedParticipants.length === sortedParticipants.length && sortedParticipants.length > 0}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSelectedParticipants(sortedParticipants.map((p) => p.id))
+                                      } else {
+                                        setSelectedParticipants([])
+                                      }
+                                    }}
+                                  />
+                                </TableHead>
+                                <TableHead>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => handleSort("name")}
+                                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                                  >
+                                    Nome
+                                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                                  </Button>
+                                </TableHead>
+                                <TableHead>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => handleSort("confirmed")}
+                                    className="h-auto p-0 font-semibold hover:bg-transparent"
+                                  >
+                                    Status
+                                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                                  </Button>
+                                </TableHead>
+                                <TableHead>Motivo</TableHead>
+                                <TableHead className="text-center">Ações</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <AnimatePresence>
+                                {sortedParticipants.map((participant) => (
+                                  <motion.tr
+                                    key={participant.id}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    transition={{ duration: 0.2 }}
+                                    className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
+                                      selectedParticipants.includes(participant.id)
+                                        ? "bg-blue-50 dark:bg-blue-900/20"
+                                        : ""
+                                    }`}
+                                  >
+                                    <TableCell>
+                                      <Checkbox
+                                        checked={selectedParticipants.includes(participant.id)}
+                                        onCheckedChange={(checked) => {
+                                          if (checked) {
+                                            setSelectedParticipants((prev) => [...prev, participant.id])
+                                          } else {
+                                            setSelectedParticipants((prev) =>
+                                              prev.filter((id) => id !== participant.id)
+                                            )
+                                          }
+                                        }}
+                                      />
+                                    </TableCell>
+                                    <TableCell className="font-medium">{participant.name}</TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        variant={participant.confirmed ? "default" : "secondary"}
+                                        className={`gap-1 cursor-pointer hover:opacity-80 ${
+                                          participant.confirmed
+                                            ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                            : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
+                                        }`}
+                                        onClick={() => toggleConfirmation(participant.id)}
+                                      >
+                                        {participant.confirmed ? (
+                                          <CheckCircle className="h-3 w-3" />
+                                        ) : (
+                                          <XCircle className="h-3 w-3" />
+                                        )}
+                                        {participant.confirmed ? "Confirmado" : "Pendente"}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="max-w-xs truncate">{participant.reason}</TableCell>
+                                    <TableCell className="text-center">
+                                      <div className="flex items-center justify-center gap-1">
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm" 
+                                              className="h-8 w-8 p-0"
+                                              onClick={() => openDetailsDialog(participant)}
+                                            >
+                                              <Eye className="h-4 w-4" />
+                                            </Button>
+                                          </TooltipTrigger>
+                                          <TooltipContent>Ver detalhes</TooltipContent>
+                                        </Tooltip>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <Button 
                                               variant="ghost" 
                                               size="sm" 
                                               className="h-8 w-8 p-0"
@@ -597,55 +597,99 @@ export default function RocketCampConfirmation() {
                                             >
                                               <Edit className="h-4 w-4" />
                                             </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Editar</TooltipContent>
-                                      </Tooltip>
-
-                                      <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                          </TooltipTrigger>
+                                          <TooltipContent>Editar</TooltipContent>
+                                        </Tooltip>
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                  onClick={() => removeParticipant(participant.id)}
+                                                >
+                                                  <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                              </TooltipTrigger>
+                                              <TooltipContent>Remover</TooltipContent>
+                                            </Tooltip>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>Remover Participante</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                Tem certeza que deseja remover <strong>{participant.name}</strong> da
+                                                lista? Esta ação não pode ser desfeita.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                              <AlertDialogAction
+                                                onClick={() => removeParticipant(participant.id)}
+                                                className="bg-red-600 hover:bg-red-700"
                                               >
-                                                <Trash2 className="h-4 w-4" />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Remover</TooltipContent>
-                                          </Tooltip>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>Remover Participante</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              Tem certeza que deseja remover <strong>{participant.name}</strong> da
-                                              lista? Esta ação não pode ser desfeita.
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction
-                                              onClick={() => removeParticipant(participant.id)}
-                                              className="bg-red-600 hover:bg-red-700"
-                                            >
-                                              Remover
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    </div>
-                                  </TableCell>
-                                </motion.tr>
-                              ))}
-                            </AnimatePresence>
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                                                Remover
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      </div>
+                                    </TableCell>
+                                  </motion.tr>
+                                ))}
+                              </AnimatePresence>
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
+
+                {/* Participants Cards - Mobile */}
+                <div className="sm:hidden space-y-4">
+                  {sortedParticipants.map((participant) => (
+                    <Card key={participant.id} className="w-full shadow border-0">
+                      <CardContent className="py-4 px-3 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-base">{participant.name}</span>
+                          <Badge
+                            variant={participant.confirmed ? "default" : "secondary"}
+                            className={`gap-1 cursor-pointer hover:opacity-80 ${
+                              participant.confirmed
+                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
+                            }`}
+                            onClick={() => toggleConfirmation(participant.id)}
+                          >
+                            {participant.confirmed ? (
+                              <CheckCircle className="h-3 w-3" />
+                            ) : (
+                              <XCircle className="h-3 w-3" />
+                            )}
+                            {participant.confirmed ? "Confirmado" : "Pendente"}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                          <span className="font-medium">Motivo:</span> {participant.reason || <span className="italic text-gray-400">(vazio)</span>}
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Button size="sm" variant="outline" className="flex-1" onClick={() => openDetailsDialog(participant)}>
+                            <Eye className="h-4 w-4 mr-1" /> Detalhes
+                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1" onClick={() => openEditDialog(participant)}>
+                            <Edit className="h-4 w-4 mr-1" /> Editar
+                          </Button>
+                          <Button size="sm" variant="destructive" className="flex-1" onClick={() => removeParticipant(participant.id)}>
+                            <Trash2 className="h-4 w-4 mr-1" /> Remover
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </TabsContent>
 
               <TabsContent value="add" className="space-y-6">
