@@ -50,7 +50,7 @@ import {
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog"
 import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
+import "jspdf-autotable"
 
 interface Participant {
   id: number
@@ -228,7 +228,7 @@ export default function RocketCampConfirmation() {
     doc.setFontSize(10)
     doc.text(`Exportado em: ${new Date().toLocaleString()}`, 14, 23)
 
-    autoTable(doc, {
+    doc.autoTable({
       startY: 28,
       head: [["Nome", "Status", "Motivo"]],
       body: filteredParticipants.map((p) => [
@@ -1040,4 +1040,10 @@ export default function RocketCampConfirmation() {
       </div>
     </TooltipProvider>
   )
+} 
+
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
 } 
