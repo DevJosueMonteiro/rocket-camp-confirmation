@@ -300,7 +300,7 @@ export default function RocketCampConfirmation() {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full sm:max-w-7xl">
           {/* Header */}
           <motion.div
             className="text-center mb-8"
@@ -364,7 +364,7 @@ export default function RocketCampConfirmation() {
             transition={{ delay: 0.6 }}
           >
             <Tabs defaultValue="participants" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="flex flex-col sm:grid sm:w-full sm:grid-cols-3 gap-2 sm:gap-0">
                 <TabsTrigger value="participants" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Participantes
@@ -381,8 +381,8 @@ export default function RocketCampConfirmation() {
 
               <TabsContent value="participants" className="space-y-6">
                 {/* Filters and Actions */}
-                <Card className={`shadow-xl border-0 ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
-                  <CardContent className="p-6">
+                <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
+                  <CardContent className="p-2 sm:p-6">
                     <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                       <div className="flex flex-col sm:flex-row gap-4 flex-1">
                         <div className="relative flex-1 max-w-sm">
@@ -391,7 +391,7 @@ export default function RocketCampConfirmation() {
                             placeholder="Buscar participantes..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
+                            className="pl-10 w-full"
                           />
                         </div>
 
@@ -482,8 +482,8 @@ export default function RocketCampConfirmation() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="overflow-x-auto">
-                        <Table>
+                      <div className="overflow-x-auto -mx-2 sm:mx-0">
+                        <Table className="min-w-[600px] sm:min-w-0 w-full text-xs sm:text-sm">
                           <TableHeader>
                             <TableRow>
                               <TableHead className="w-12">
@@ -649,7 +649,7 @@ export default function RocketCampConfirmation() {
               </TabsContent>
 
               <TabsContent value="add" className="space-y-6">
-                <Card className={`shadow-xl border-0 ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
+                <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <UserPlus className="h-5 w-5" />
@@ -657,7 +657,7 @@ export default function RocketCampConfirmation() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="name">Nome Completo *</Label>
@@ -666,6 +666,7 @@ export default function RocketCampConfirmation() {
                             value={newParticipant.name}
                             onChange={(e) => setNewParticipant({ ...newParticipant, name: e.target.value })}
                             placeholder="Digite o nome completo"
+                            className="w-full"
                           />
                         </div>
 
@@ -677,6 +678,7 @@ export default function RocketCampConfirmation() {
                             value={newParticipant.email}
                             onChange={(e) => setNewParticipant({ ...newParticipant, email: e.target.value })}
                             placeholder="email@exemplo.com"
+                            className="w-full"
                           />
                         </div>
 
@@ -687,6 +689,7 @@ export default function RocketCampConfirmation() {
                             value={newParticipant.phone}
                             onChange={(e) => setNewParticipant({ ...newParticipant, phone: e.target.value })}
                             placeholder="(11) 99999-9999"
+                            className="w-full"
                           />
                         </div>
                       </div>
@@ -702,6 +705,7 @@ export default function RocketCampConfirmation() {
                             placeholder="15"
                             min="1"
                             max="18"
+                            className="w-full"
                           />
                         </div>
 
@@ -713,6 +717,7 @@ export default function RocketCampConfirmation() {
                             onChange={(e) => setNewParticipant({ ...newParticipant, notes: e.target.value })}
                             placeholder="Informações adicionais..."
                             rows={3}
+                            className="w-full"
                           />
                         </div>
                       </div>
@@ -737,7 +742,7 @@ export default function RocketCampConfirmation() {
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">
-                <Card className={`shadow-xl border-0 ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
+                <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Settings className="h-5 w-5" />
