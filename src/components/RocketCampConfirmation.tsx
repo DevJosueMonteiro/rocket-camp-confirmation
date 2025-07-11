@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "./ui/card"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Checkbox } from "./ui/checkbox"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
+import { TabsList, TabsTrigger } from "./ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Textarea } from "./ui/textarea"
 import { Switch } from "./ui/switch"
@@ -49,6 +49,8 @@ import {
 } from "lucide-react"
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 
 interface Participant {
   id: number
@@ -220,35 +222,30 @@ export default function RocketCampConfirmation() {
   }
 
   const exportData = () => {
-    const csvContent = [
-      ["Nome", "Email", "Telefone", "Idade", "Confirmado", "Prioridade", "Data de Registro", "Motivo"],
-      ...participants.map((p) => [
+    const doc = new jsPDF()
+    doc.setFontSize(16)
+    doc.text("Rocket Summer Camp 25 - Participantes", 14, 16)
+    doc.setFontSize(10)
+    doc.text(`Exportado em: ${new Date().toLocaleString()}`, 14, 23)
+
+    autoTable(doc, {
+      startY: 28,
+      head: [["Nome", "Status", "Motivo"]],
+      body: filteredParticipants.map((p) => [
         p.name,
-        p.email || "",
-        p.phone || "",
-        p.age?.toString() || "",
-        p.confirmed ? "Sim" : "Não",
-        p.priority === "high" ? "Alta" : p.priority === "medium" ? "Média" : "Baixa",
-        p.registrationDate,
-        p.reason,
+        p.confirmed ? "Confirmado" : "Pendente",
+        p.reason || "",
       ]),
-    ]
-      .map((row) => row.map((cell) => `"${cell}"`).join(","))
-      .join("\n")
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [30, 64, 175] },
+      margin: { left: 8, right: 8 },
+      theme: 'striped',
+    })
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const link = document.createElement("a")
-    const url = URL.createObjectURL(blob)
-    link.setAttribute("href", url)
-    link.setAttribute("download", "rocket-camp-participants.csv")
-    link.style.visibility = "hidden"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
+    doc.save("rocket-camp-participantes.pdf")
     toast({
-      title: "Dados exportados!",
-      description: "Lista de participantes foi baixada como CSV.",
+      title: "PDF exportado!",
+      description: "Lista de participantes baixada como PDF.",
     })
   }
 
@@ -296,6 +293,8 @@ export default function RocketCampConfirmation() {
       description: `${editingParticipant.name} foi atualizado com sucesso.`,
     })
   }
+
+  const [tabValue, setTabValue] = useState("participants")
 
   return (
     <TooltipProvider>
@@ -356,6 +355,49 @@ export default function RocketCampConfirmation() {
             </Button>
           </motion.div>
 
+          {/* Tabs Navigation */}
+          <div className="block sm:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t z-50">
+            <div className="flex justify-around items-center h-16">
+              <button
+                className={`flex flex-col items-center flex-1 py-2 ${tabValue === 'participants' ? 'text-blue-600' : 'text-gray-500'}`}
+                onClick={() => setTabValue('participants')}
+              >
+                <Users className="h-6 w-6 mb-1" />
+                <span className="text-xs">Participantes</span>
+              </button>
+              <button
+                className={`flex flex-col items-center flex-1 py-2 ${tabValue === 'add' ? 'text-blue-600' : 'text-gray-500'}`}
+                onClick={() => setTabValue('add')}
+              >
+                <UserPlus className="h-6 w-6 mb-1" />
+                <span className="text-xs">Adicionar</span>
+              </button>
+              <button
+                className={`flex flex-col items-center flex-1 py-2 ${tabValue === 'settings' ? 'text-blue-600' : 'text-gray-500'}`}
+                onClick={() => setTabValue('settings')}
+              >
+                <Settings className="h-6 w-6 mb-1" />
+                <span className="text-xs">Configurações</span>
+              </button>
+            </div>
+          </div>
+          <div className="hidden sm:block">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="participants" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Participantes
+              </TabsTrigger>
+              <TabsTrigger value="add" className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                Adicionar
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Configurações
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
           {/* Main Content */}
           <motion.div
             className="space-y-6"
@@ -363,23 +405,8 @@ export default function RocketCampConfirmation() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Tabs defaultValue="participants" className="space-y-6">
-              <TabsList className="flex flex-col sm:grid sm:w-full sm:grid-cols-3 gap-2 sm:gap-0">
-                <TabsTrigger value="participants" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Participantes
-                </TabsTrigger>
-                <TabsTrigger value="add" className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Adicionar
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Configurações
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="participants" className="space-y-6">
+            {(tabValue === 'participants' || tabValue === undefined) && (
+              <>
                 {/* Filters and Actions */}
                 <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
                   <CardContent className="p-2 sm:p-6">
@@ -690,159 +717,157 @@ export default function RocketCampConfirmation() {
                     </Card>
                   ))}
                 </div>
-              </TabsContent>
-
-              <TabsContent value="add" className="space-y-6">
-                <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <UserPlus className="h-5 w-5" />
-                      Adicionar Novo Participante
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="name">Nome Completo *</Label>
-                          <Input
-                            id="name"
-                            value={newParticipant.name}
-                            onChange={(e) => setNewParticipant({ ...newParticipant, name: e.target.value })}
-                            placeholder="Digite o nome completo"
-                            className="w-full"
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="email">Email</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={newParticipant.email}
-                            onChange={(e) => setNewParticipant({ ...newParticipant, email: e.target.value })}
-                            placeholder="email@exemplo.com"
-                            className="w-full"
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="phone">Telefone</Label>
-                          <Input
-                            id="phone"
-                            value={newParticipant.phone}
-                            onChange={(e) => setNewParticipant({ ...newParticipant, phone: e.target.value })}
-                            placeholder="(11) 99999-9999"
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="age">Idade</Label>
-                          <Input
-                            id="age"
-                            type="number"
-                            value={newParticipant.age}
-                            onChange={(e) => setNewParticipant({ ...newParticipant, age: e.target.value })}
-                            placeholder="15"
-                            min="1"
-                            max="18"
-                            className="w-full"
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="notes">Observações</Label>
-                          <Textarea
-                            id="notes"
-                            value={newParticipant.notes}
-                            onChange={(e) => setNewParticipant({ ...newParticipant, notes: e.target.value })}
-                            placeholder="Informações adicionais..."
-                            rows={3}
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end gap-2 mt-6">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setNewParticipant({ name: "", email: "", phone: "", age: "", notes: "" })
-                        }}
-                      >
-                        Limpar
-                      </Button>
-                      <Button onClick={addParticipant} disabled={!newParticipant.name.trim()}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Adicionar Participante
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="settings" className="space-y-6">
-                <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Settings className="h-5 w-5" />
-                      Configurações do Sistema
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+              </>
+            )}
+            {tabValue === 'add' && (
+              <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserPlus className="h-5 w-5" />
+                    Adicionar Novo Participante
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label className="text-base font-medium">Modo Escuro</Label>
-                          <p className="text-sm text-gray-500">Alternar entre tema claro e escuro</p>
-                        </div>
-                        <Switch checked={isDarkMode} onCheckedChange={setIsDarkMode} />
+                      <div>
+                        <Label htmlFor="name">Nome Completo *</Label>
+                        <Input
+                          id="name"
+                          value={newParticipant.name}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, name: e.target.value })}
+                          placeholder="Digite o nome completo"
+                          className="w-full"
+                        />
                       </div>
 
-                      <Separator />
-
-                      <div className="space-y-2">
-                        <Label className="text-base font-medium">Notificações</Label>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Novos registros</Label>
-                            <Switch defaultChecked />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Confirmações</Label>
-                            <Switch defaultChecked />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Lembretes</Label>
-                            <Switch />
-                          </div>
-                        </div>
+                      <div>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={newParticipant.email}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, email: e.target.value })}
+                          placeholder="email@exemplo.com"
+                          className="w-full"
+                        />
                       </div>
 
-                      <Separator />
+                      <div>
+                        <Label htmlFor="phone">Telefone</Label>
+                        <Input
+                          id="phone"
+                          value={newParticipant.phone}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, phone: e.target.value })}
+                          placeholder="(11) 99999-9999"
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-base font-medium">Exportação</Label>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                            <FileText className="h-4 w-4" />
-                            Backup Completo
-                          </Button>
-                          <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                            <Download className="h-4 w-4" />
-                            Relatório PDF
-                          </Button>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="age">Idade</Label>
+                        <Input
+                          id="age"
+                          type="number"
+                          value={newParticipant.age}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, age: e.target.value })}
+                          placeholder="15"
+                          min="1"
+                          max="18"
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="notes">Observações</Label>
+                        <Textarea
+                          id="notes"
+                          value={newParticipant.notes}
+                          onChange={(e) => setNewParticipant({ ...newParticipant, notes: e.target.value })}
+                          placeholder="Informações adicionais..."
+                          rows={3}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setNewParticipant({ name: "", email: "", phone: "", age: "", notes: "" })
+                      }}
+                    >
+                      Limpar
+                    </Button>
+                    <Button onClick={addParticipant} disabled={!newParticipant.name.trim()}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Participante
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {tabValue === 'settings' && (
+              <Card className={`shadow-xl border-0 w-full ${isDarkMode ? "bg-gray-800/50" : "bg-white/90"} backdrop-blur-sm`}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    Configurações do Sistema
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-base font-medium">Modo Escuro</Label>
+                        <p className="text-sm text-gray-500">Alternar entre tema claro e escuro</p>
+                      </div>
+                      <Switch checked={isDarkMode} onCheckedChange={setIsDarkMode} />
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                      <Label className="text-base font-medium">Notificações</Label>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Novos registros</Label>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Confirmações</Label>
+                          <Switch defaultChecked />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Lembretes</Label>
+                          <Switch />
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                      <Label className="text-base font-medium">Exportação</Label>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+                          <FileText className="h-4 w-4" />
+                          Backup Completo
+                        </Button>
+                        <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+                          <Download className="h-4 w-4" />
+                          Relatório PDF
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
 
           {/* Animated Footer */}
@@ -864,155 +889,155 @@ export default function RocketCampConfirmation() {
             <p className="text-xs">Desenvolvido com ❤️ para uma experiência incrível</p>
           </motion.div>
         </div>
+
+        {/* Dialog de Detalhes */}
+        <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Participante</DialogTitle>
+            </DialogHeader>
+            {selectedParticipant && (
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Nome</Label>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.name}</p>
+                </div>
+                {selectedParticipant.email && (
+                  <div>
+                    <Label className="text-sm font-medium">Email</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.email}</p>
+                  </div>
+                )}
+                {selectedParticipant.phone && (
+                  <div>
+                    <Label className="text-sm font-medium">Telefone</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.phone}</p>
+                  </div>
+                )}
+                {selectedParticipant.age && (
+                  <div>
+                    <Label className="text-sm font-medium">Idade</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.age} anos</p>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <Badge
+                    variant={selectedParticipant.confirmed ? "default" : "secondary"}
+                    className={`gap-1 ${
+                      selectedParticipant.confirmed
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                        : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
+                    }`}
+                  >
+                    {selectedParticipant.confirmed ? (
+                      <CheckCircle className="h-3 w-3" />
+                    ) : (
+                      <XCircle className="h-3 w-3" />
+                    )}
+                    {selectedParticipant.confirmed ? "Confirmado" : "Pendente"}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Motivo</Label>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.reason}</p>
+                </div>
+                {selectedParticipant.notes && (
+                  <div>
+                    <Label className="text-sm font-medium">Observações</Label>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.notes}</p>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-sm font-medium">Data de Registro</Label>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.registrationDate}</p>
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button onClick={() => setShowDetailsDialog(false)}>Fechar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog de Edição */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Editar Participante</DialogTitle>
+            </DialogHeader>
+            {editingParticipant && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-name">Nome</Label>
+                  <Input
+                    id="edit-name"
+                    value={editingParticipant.name}
+                    onChange={(e) => setEditingParticipant({ ...editingParticipant, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={editingParticipant.email || ""}
+                    onChange={(e) => setEditingParticipant({ ...editingParticipant, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-phone">Telefone</Label>
+                  <Input
+                    id="edit-phone"
+                    value={editingParticipant.phone || ""}
+                    onChange={(e) => setEditingParticipant({ ...editingParticipant, phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-age">Idade</Label>
+                  <Input
+                    id="edit-age"
+                    type="number"
+                    value={editingParticipant.age || ""}
+                    onChange={(e) => setEditingParticipant({ ...editingParticipant, age: e.target.value ? parseInt(e.target.value) : undefined })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-reason">Motivo</Label>
+                  <Input
+                    id="edit-reason"
+                    value={editingParticipant.reason}
+                    onChange={(e) => setEditingParticipant({ ...editingParticipant, reason: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-notes">Observações</Label>
+                  <Textarea
+                    id="edit-notes"
+                    value={editingParticipant.notes || ""}
+                    onChange={(e) => setEditingParticipant({ ...editingParticipant, notes: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="edit-confirmed"
+                    checked={editingParticipant.confirmed}
+                    onCheckedChange={(checked) => setEditingParticipant({ ...editingParticipant, confirmed: checked })}
+                  />
+                  <Label htmlFor="edit-confirmed">Confirmado</Label>
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={saveEdit}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Dialog de Detalhes */}
-      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Participante</DialogTitle>
-          </DialogHeader>
-          {selectedParticipant && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Nome</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.name}</p>
-              </div>
-              {selectedParticipant.email && (
-                <div>
-                  <Label className="text-sm font-medium">Email</Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.email}</p>
-                </div>
-              )}
-              {selectedParticipant.phone && (
-                <div>
-                  <Label className="text-sm font-medium">Telefone</Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.phone}</p>
-                </div>
-              )}
-              {selectedParticipant.age && (
-                <div>
-                  <Label className="text-sm font-medium">Idade</Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.age} anos</p>
-                </div>
-              )}
-              <div>
-                <Label className="text-sm font-medium">Status</Label>
-                <Badge
-                  variant={selectedParticipant.confirmed ? "default" : "secondary"}
-                  className={`gap-1 ${
-                    selectedParticipant.confirmed
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                      : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
-                  }`}
-                >
-                  {selectedParticipant.confirmed ? (
-                    <CheckCircle className="h-3 w-3" />
-                  ) : (
-                    <XCircle className="h-3 w-3" />
-                  )}
-                  {selectedParticipant.confirmed ? "Confirmado" : "Pendente"}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Motivo</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.reason}</p>
-              </div>
-              {selectedParticipant.notes && (
-                <div>
-                  <Label className="text-sm font-medium">Observações</Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.notes}</p>
-                </div>
-              )}
-              <div>
-                <Label className="text-sm font-medium">Data de Registro</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{selectedParticipant.registrationDate}</p>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={() => setShowDetailsDialog(false)}>Fechar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog de Edição */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Participante</DialogTitle>
-          </DialogHeader>
-          {editingParticipant && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="edit-name">Nome</Label>
-                <Input
-                  id="edit-name"
-                  value={editingParticipant.name}
-                  onChange={(e) => setEditingParticipant({ ...editingParticipant, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-email">Email</Label>
-                <Input
-                  id="edit-email"
-                  type="email"
-                  value={editingParticipant.email || ""}
-                  onChange={(e) => setEditingParticipant({ ...editingParticipant, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-phone">Telefone</Label>
-                <Input
-                  id="edit-phone"
-                  value={editingParticipant.phone || ""}
-                  onChange={(e) => setEditingParticipant({ ...editingParticipant, phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-age">Idade</Label>
-                <Input
-                  id="edit-age"
-                  type="number"
-                  value={editingParticipant.age || ""}
-                  onChange={(e) => setEditingParticipant({ ...editingParticipant, age: e.target.value ? parseInt(e.target.value) : undefined })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-reason">Motivo</Label>
-                <Input
-                  id="edit-reason"
-                  value={editingParticipant.reason}
-                  onChange={(e) => setEditingParticipant({ ...editingParticipant, reason: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-notes">Observações</Label>
-                <Textarea
-                  id="edit-notes"
-                  value={editingParticipant.notes || ""}
-                  onChange={(e) => setEditingParticipant({ ...editingParticipant, notes: e.target.value })}
-                  rows={3}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="edit-confirmed"
-                  checked={editingParticipant.confirmed}
-                  onCheckedChange={(checked) => setEditingParticipant({ ...editingParticipant, confirmed: checked })}
-                />
-                <Label htmlFor="edit-confirmed">Confirmado</Label>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={saveEdit}>Salvar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </TooltipProvider>
   )
 } 
